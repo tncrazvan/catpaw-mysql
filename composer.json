@@ -1,0 +1,47 @@
+{
+  "name": "razshare/catpaw-starter",
+  "type": "project",
+  "description": "A php CatPaw starter template",
+  "keywords": [
+    "php",
+    "cli",
+    "server",
+    "http",
+    "websocket",
+    "catpaw",
+    "starter",
+    "template"
+  ],
+  "homepage": "https://github.com/tncrazvan/catpaw-starter",
+  "license": "GPL-2.0-only",
+  "scripts": {
+    "load": "@composer dump-autoload -o",
+    "script": "@php ./vendor/razshare/catpaw/scripts/start.php",
+    "start": "@script src/main.php",
+    "dev": "@script src/main.php dev 100 && @composer run dev"
+  },
+  "authors": [
+    {
+      "name": "Razvan Tanase",
+      "email": "tangent.jotey@gmail.com",
+      "homepage": "https://github.com/tncrazvan",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Razshare\\CatPaw\\MYSQL\\": "src/lib/"
+    }
+  },
+  "require": {
+    "php": ">=8.0",
+    "razshare/catpaw": "^2.0.0",
+    "amphp/amp": "^2.6",
+    "amphp/file": "^2.0",
+    "amphp/mysql": "^2.1"
+  },
+  "config": {
+    "preferred-install": "dist",
+    "process-timeout": 0
+  }
+}
