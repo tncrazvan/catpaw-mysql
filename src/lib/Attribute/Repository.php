@@ -1,6 +1,6 @@
 <?php
 
-namespace Razshare\CatPaw\MYSQL\Attributes;
+namespace CatPaw\MYSQL\Attribute;
 
 use Amp\LazyPromise;
 use Amp\Promise;
@@ -11,7 +11,7 @@ use CatPaw\Attributes\Traits\CoreAttributeDefinition;
 use CatPaw\Misc\HttpContext;
 use CatPaw\Tools\StringStack;
 use Closure;
-use Razshare\CatPaw\MYSQL\Service\DatabaseService;
+use CatPaw\MYSQL\Service\DatabaseService;
 use ReflectionParameter;
 use ReflectionUnionType;
 

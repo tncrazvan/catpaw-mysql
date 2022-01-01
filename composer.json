@@ -30,7 +30,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Razshare\\CatPaw\\MYSQL\\": "src/lib/"
+      "CatPaw\\MYSQL\\": "src/lib/"
     }
   },
   "require": {

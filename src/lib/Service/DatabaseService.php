@@ -1,6 +1,6 @@
 <?php
 
-namespace Razshare\CatPaw\MYSQL\Service;
+namespace CatPaw\MYSQL\Service;
 
 use Amp\LazyPromise;
 use Amp\Mysql\CommandResult;
@@ -10,8 +10,7 @@ use Amp\Mysql\ResultSet;
 use Amp\Mysql\Statement;
 use Amp\Promise;
 use CatPaw\Attributes\Service;
-use League\Uri\Exception;
-use Razshare\CatPaw\MYSQL\Exception\PoolNotFoundException;
+use CatPaw\MYSQL\Exception\PoolNotFoundException;
 use function Amp\Mysql\pool;
 
 #[Service]
