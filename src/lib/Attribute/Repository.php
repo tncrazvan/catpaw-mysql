@@ -36,28 +36,6 @@ class Repository implements AttributeInterface {
 		$this->db = $db;
 	}
 
-	private function buildUpdate(): Closure {
-		return function(array|object $args, false|string $poolName = false) {
-			$params = [];
-			$keys = [];
-			foreach($args as $key => $value) {
-				$params[strtolower($key)] = $value;
-				$keys[] = strtolower($key);
-			}
-
-			$columns = join(",", $keys);
-			$values = join(",:", $keys);
-
-			return $this->db->send(
-				query   : <<<SQL
-				insert into $this->repositoryName ($columns) values(:$values)
-				SQL,
-				params  : is_object($params) ? (array)$params : $params,
-				poolName: $poolName
-			);
-		};
-	}
-
 	private const CREATE    = 0;
 	private const READ      = 1;
 	private const READ_PAGE = 2;
@@ -65,11 +43,8 @@ class Repository implements AttributeInterface {
 	private const DELETE    = 4;
 
 	private function build(string $name): false|Closure {
-
-		$page = false;
 		$base = '';
 		$selectOrDelete = '';
-		$updateOrInsert = '';
 		$clause = '';
 		$action = self::READ;
 		if("add" !== $name) {
@@ -172,18 +147,28 @@ class Repository implements AttributeInterface {
 					poolName: $poolName
 				);
 			},
-			self::UPDATE             => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
+			self::UPDATE             => function(
+				array|object $payload,
+				array|object $matcher,
+				false|string $poolName = false
+			) use ($base, $clause) {
 				$params = [];
-				if(is_object($args))
-					$args = (array)$args;
-				$groups = [];
-				foreach($args as $key => $value) {
+				if(is_object($payload))
+					$payload = (array)$payload;
+				if(is_object($matcher))
+					$matcher = (array)$matcher;
+
+				$list = [];
+				foreach($payload as $key => $value) {
 					$key = strtolower($key);
-					$params[$key] = $value;
-					$groups[] = "$key = :$key";
+					$list[] = "$key = :v$key";
+					$params["v$key"] = $value;
 				}
 
-				$base .= ' '.join(',', $groups);
+				foreach($matcher as $key => $value)
+					$params[$key] = strtolower($value);
+
+				$base .= ' '.join(',', $list);
 
 				return $this->db->send(
 					query   : "$base $clause",

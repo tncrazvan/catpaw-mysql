@@ -19,14 +19,20 @@ namespace {
 			database: "genericstore"
 		);
 
-		Route::get(
-			path    : "/",
-			callback: fn(
-				#[Repository("account")] $findByLikeEmail
-			) => $findByLikeEmail([
-								  "email" => "%@gmail%",
-							  ])
-		);
+Route::get(
+	path    : "/",
+	callback: fn(
+		#[Repository("account")]
+		$updateByLikeEmail
+	) => $updateByLikeEmail(
+		[
+			"email" => "new@gmail.com",    //payload
+		],
+		[
+			"email" => "my@gmail.com",    //lookup
+		],
+	)
+);
 
 		echo Route::describe();
 	}
