@@ -1,7 +1,8 @@
 {
-  "name": "razshare/catpaw-starter",
-  "type": "project",
-  "description": "A php CatPaw starter template",
+  "name": "razshare/catpaw-mysql",
+  "description": "A MYSQL library for catpaw that includes a repository attribute for ease of use.",
+  "type": "library",
+  "license": "GPL-2.0-only",
   "keywords": [
     "php",
     "cli",
@@ -13,7 +14,6 @@
     "template"
   ],
   "homepage": "https://github.com/tncrazvan/catpaw-starter",
-  "license": "GPL-2.0-only",
   "scripts": {
     "load": "@composer dump-autoload -o",
     "script": "@php ./vendor/razshare/catpaw/scripts/start.php",
