@@ -4,6 +4,7 @@ namespace CatPaw\MYSQL\Attribute;
 
 use Amp\LazyPromise;
 use Amp\Promise;
+use App\Tools\Page;
 use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
@@ -39,30 +40,66 @@ class Repository implements AttributeInterface {
 
 		$stack = StringStack::of($name);
 
-		$list = $stack->expect("findBy", "And", "Or");
+		$list = $stack->expect("findBy", "pageBy", "removeBy", "And", "Or");
 
+		$page = false;
 		$select = '';
 		$clause = '';
 		for($list->rewind(); $list->valid(); $list->next()) {
 			[$prec, $token] = $list->current();
-			if("findBy" === $token)
+			if("removeBy" === $token) {
+				$select = <<<SQL
+				 delete from `$this->table`
+				SQL;
+				$page = false;
+			} else if("pageBy" === $token) {
 				$select = <<<SQL
 				 select * from `$this->table`
 				SQL;
-			else if($prec) {
+				$page = true;
+			} else if("findBy" === $token) {
+				$select = <<<SQL
+				 select * from `$this->table`
+				SQL;
+				$page = false;
+			} else if($prec) {
+				$operation = '=';
+				if(str_starts_with($prec, "Between")) {
+					$prec = substr($prec, 7);
+					$operation = 'between';
+				}else if(str_starts_with($prec, "Like")) {
+					$operation = 'like';
+					$prec = substr($prec, 4);
+				}
 				$prec = strtolower($prec);
 				$where = ('' === $clause ? 'where' : '');
 				$extra = strtolower($token??'');
 				$clause .= <<<SQL
-				 $where `$prec` = :$prec $extra
+				 $where `$prec` $operation :$prec $extra
 				SQL;
 			}
 		}
 
+		if($page) {
+			return function(Page $page, array $args, false|string $poolName = false) use (
+				$select,
+				$clause,
+			) {
+				$params = [];
+				foreach($args as $key => $value)
+					$params[strtolower($key)] = $value;
+
+				return $this->db->send(
+					query   : "$select $clause $page",
+					params  : $params,
+					poolName: $poolName
+				);
+			};
+		}
 
 		return function(array $args, false|string $poolName = false) use (
 			$select,
-			$clause
+			$clause,
 		) {
 			$params = [];
 			foreach($args as $key => $value)
