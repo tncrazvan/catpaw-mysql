@@ -22,10 +22,10 @@ namespace {
 		Route::get(
 			path    : "/",
 			callback: fn(
-				#[Repository("account")] $add
-			) => $add([
-						  "email" => "tangent.jotey@gmail.com11111",
-					  ])
+				#[Repository("account")] $findByLikeEmail
+			) => $findByLikeEmail([
+								  "email" => "%@gmail%",
+							  ])
 		);
 
 		echo Route::describe();
