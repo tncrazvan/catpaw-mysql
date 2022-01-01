@@ -3,9 +3,9 @@
 namespace {
 
 	use CatPaw\Attributes\StartWebServer;
+	use CatPaw\MYSQL\Attribute\Repository;
+	use CatPaw\MYSQL\Service\DatabaseService;
 	use CatPaw\Tools\Helpers\Route;
-	use Razshare\CatPaw\MYSQL\Attributes\Repository;
-	use Razshare\CatPaw\MYSQL\Service\DatabaseService;
 
 	#[StartWebServer]
 	function main(
@@ -19,9 +19,15 @@ namespace {
 			database: "genericstore"
 		);
 
-		Route::get("/plain", fn(
-			#[Repository("account")] $findByEmail
-		) => $findByEmail(["email" => "tangent.jotey@gmail.com"]));
+		Route::get(
+			path    : "/",
+			callback: fn(
+				#[Repository("account")] $add
+			) => $add([
+						  "email" => "tangent.jotey@gmail.com11111",
+					  ])
+		);
+
 		echo Route::describe();
 	}
 }
