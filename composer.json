@@ -6,17 +6,13 @@
   "keywords": [
     "php",
     "cli",
-    "server",
-    "http",
-    "websocket",
     "catpaw",
-    "starter",
-    "template"
+    "amphp"
   ],
-  "homepage": "https://github.com/tncrazvan/catpaw-starter",
+  "homepage": "https://github.com/tncrazvan/catpaw-mysql",
   "scripts": {
     "load": "@composer dump-autoload -o",
-    "script": "@php ./vendor/razshare/catpaw/scripts/start.php",
+    "script": "@php ./vendor/catpaw/core/scripts/start.php",
     "start": "@script src/main.php",
     "dev": "@script src/main.php dev 100 && @composer run dev"
   },
