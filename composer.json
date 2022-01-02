@@ -1,5 +1,5 @@
 {
-  "name": "razshare/catpaw-mysql",
+  "name": "catpaw/mysql",
   "description": "A MYSQL library for catpaw that includes a repository attribute for ease of use.",
   "type": "library",
   "license": "GPL-2.0-only",
