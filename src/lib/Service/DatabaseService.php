@@ -9,7 +9,7 @@ use Amp\Mysql\Pool;
 use Amp\Mysql\ResultSet;
 use Amp\Mysql\Statement;
 use Amp\Promise;
-use CatPaw\Attributes\Service;
+use CatPaw\Attribute\Service;
 use CatPaw\MYSQL\Exception\PoolNotFoundException;
 use function Amp\Mysql\pool;
 

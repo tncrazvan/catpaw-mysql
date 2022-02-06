@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Tools;
+namespace CatPaw\MYSQL\Utility;
 
 use JetBrains\PhpStorm\Pure;
 

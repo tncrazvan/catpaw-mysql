@@ -5,12 +5,12 @@ namespace CatPaw\MYSQL\Attribute;
 use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
-use CatPaw\Attributes\Entry;
-use CatPaw\Attributes\Interfaces\AttributeInterface;
-use CatPaw\Attributes\Traits\CoreAttributeDefinition;
-use CatPaw\Misc\HttpContext;
-use CatPaw\MYSQL\Tools\Page;
-use CatPaw\Tools\StringStack;
+use CatPaw\Attribute\Entry;
+use CatPaw\Attribute\Interface\AttributeInterface;
+use CatPaw\Attribute\Trait\CoreAttributeDefinition;
+use CatPaw\MYSQL\Utility\Page;
+use CatPaw\Utility\StringStack;
+use CatPaw\Web\HttpContext;
 use Closure;
 use CatPaw\MYSQL\Service\DatabaseService;
 use ReflectionParameter;
@@ -204,7 +204,8 @@ class Repository implements AttributeInterface {
 	/**
 	 * @inheritDoc
 	 */
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, HttpContext|false $http): Promise {
+	public function onParameter(ReflectionParameter $parameter, mixed &$value, mixed $http): Promise {
+		/** @var false|HttpContext $http */
 		return new LazyPromise(function() use (
 			$parameter,
 			&$value,
