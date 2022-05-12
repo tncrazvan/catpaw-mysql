@@ -17,7 +17,8 @@ use ReflectionParameter;
 use ReflectionUnionType;
 
 #[Attribute]
-class Repository implements AttributeInterface {
+class Repository implements AttributeInterface
+{
 	use CoreAttributeDefinition;
 
 	/**
@@ -32,7 +33,8 @@ class Repository implements AttributeInterface {
 	private DatabaseService $db;
 
 	#[Entry]
-	public function main(DatabaseService $db) {
+	public function main(DatabaseService $db)
+	{
 		$this->db = $db;
 	}
 
@@ -42,70 +44,71 @@ class Repository implements AttributeInterface {
 	private const UPDATE    = 3;
 	private const DELETE    = 4;
 
-	private function build(string $name): false|Closure {
+	private function build(string $name): false|Closure
+	{
 		$base = '';
 		$selectOrDelete = '';
 		$clause = '';
 		$action = self::READ;
-		if("add" !== $name) {
+		if ("add" !== $name) {
 			$stack = StringStack::of($name);
 
 			$list = $stack->expect("findBy", "pageBy", "removeBy", "updateBy", "And", "Or");
 
-			for($list->rewind(); $list->valid(); $list->next()) {
+			for ($list->rewind(); $list->valid(); $list->next()) {
 				[$prec, $token] = $list->current();
 				$token = lcfirst($token);
-				if("removeBy" === $token) {
+				if ("removeBy" === $token) {
 					$base = <<<SQL
 					delete from `$this->repositoryName`
 					SQL;
 					$action = self::DELETE;
-				} else if("pageBy" === $token) {
+				} else if ("pageBy" === $token) {
 					$base = <<<SQL
 					select * from `$this->repositoryName`
 					SQL;
 					$action = self::READ_PAGE;
-				} else if("findBy" === $token) {
+				} else if ("findBy" === $token) {
 					$base = <<<SQL
 					select * from `$this->repositoryName`
 					SQL;
 					$page = false;
-				} else if("updateBy" === $token) {
+				} else if ("updateBy" === $token) {
 					$base = <<<SQL
 					update $this->repositoryName set
 					SQL;
 					$action = self::UPDATE;
-				} else if($prec) {
+				} else if ($prec) {
 					$operation = '=';
-					if(str_starts_with($prec, "Between")) {
+					if (str_starts_with($prec, "Between")) {
 						$prec = substr($prec, 7);
 						$operation = 'between';
-					} else if(str_starts_with($prec, "Like")) {
+					} else if (str_starts_with($prec, "Like")) {
 						$operation = 'like';
 						$prec = substr($prec, 4);
 					}
 					$prec = strtolower($prec);
 					$where = ('' === $clause ? 'where' : '');
-					$extra = strtolower($token??'');
+					$extra = strtolower($token ?? '');
 					$clause .= <<<SQL
 					 $where `$prec` $operation :$prec $extra
 					SQL;
 				}
 			}
-			if(self::READ_PAGE === $action) {
-				return function(Page $page, array $args, false|string $poolName = false) use (
+			if (self::READ_PAGE === $action) {
+				return function (Page $page, array $args, false|string $poolName = false) use (
 					$selectOrDelete,
-					$clause,
+					$clause
 				) {
 					$params = [];
-					if(is_object($args))
+					if (is_object($args))
 						$args = (array)$args;
-					foreach($args as $key => $value)
+					foreach ($args as $key => $value)
 						$params[strtolower($key)] = $value;
 
 					return $this->db->send(
-						query   : "$selectOrDelete $clause $page",
-						params  : $params,
+						query: "$selectOrDelete $clause $page",
+						params: $params,
 						poolName: $poolName
 					);
 				};
@@ -115,82 +118,82 @@ class Repository implements AttributeInterface {
 			$action = self::CREATE;
 		}
 
-		if(self::UPDATE === $action && '' === $clause) {
+		if (self::UPDATE === $action && '' === $clause) {
 			die("No clause set for update action on repository \"$this->repositoryName\".\n");
-		} else if(self::DELETE === $action && '' === $clause) {
+		} else if (self::DELETE === $action && '' === $clause) {
 			die("No clause set for delete action on repository \"$this->repositoryName\".\n");
 		}
 
 
 		return match ($action) {
-			self::READ, self::DELETE => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
+			self::READ, self::DELETE => function (array|object $args, false|string $poolName = false) use ($base, $clause) {
 				$params = [];
-				if(is_object($args))
+				if (is_object($args))
 					$args = (array)$args;
-				foreach($args as $key => $value)
+				foreach ($args as $key => $value)
 					$params[strtolower($key)] = $value;
 				return $this->db->send(
-					query   : "$base $clause",
-					params  : $params,
+					query: "$base $clause",
+					params: $params,
 					poolName: $poolName
 				);
 			},
-			self::READ_PAGE          => function(Page $page, array|object $args, false|string $poolName = false) use ($base, $clause) {
+			self::READ_PAGE          => function (Page $page, array|object $args, false|string $poolName = false) use ($base, $clause) {
 				$params = [];
-				if(is_object($args))
+				if (is_object($args))
 					$args = (array)$args;
-				foreach($args as $key => $value)
+				foreach ($args as $key => $value)
 					$params[strtolower($key)] = $value;
 				return $this->db->send(
-					query   : "$base $clause $page",
-					params  : $params,
+					query: "$base $clause $page",
+					params: $params,
 					poolName: $poolName
 				);
 			},
-			self::UPDATE             => function(
+			self::UPDATE             => function (
 				array|object $payload,
 				array|object $matcher,
 				false|string $poolName = false
 			) use ($base, $clause) {
 				$params = [];
-				if(is_object($payload))
+				if (is_object($payload))
 					$payload = (array)$payload;
-				if(is_object($matcher))
+				if (is_object($matcher))
 					$matcher = (array)$matcher;
 
 				$list = [];
-				foreach($payload as $key => $value) {
+				foreach ($payload as $key => $value) {
 					$key = strtolower($key);
 					$list[] = "$key = :v$key";
 					$params["v$key"] = $value;
 				}
 
-				foreach($matcher as $key => $value)
+				foreach ($matcher as $key => $value)
 					$params[$key] = strtolower($value);
 
-				$base .= ' '.join(',', $list);
+				$base .= ' ' . join(',', $list);
 
 				return $this->db->send(
-					query   : "$base $clause",
-					params  : $params,
+					query: "$base $clause",
+					params: $params,
 					poolName: $poolName
 				);
 			},
-			self::CREATE             => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
+			self::CREATE             => function (array|object $args, false|string $poolName = false) use ($base, $clause) {
 				$params = [];
-				if(is_object($args))
+				if (is_object($args))
 					$args = (array)$args;
 				$groups = [];
-				foreach($args as $key => $value) {
+				foreach ($args as $key => $value) {
 					$key = strtolower($key);
 					$params[$key] = $value;
 					$groups[] = $key;
 				}
-				$base .= '('.join(',', $groups).') values (:'.join(',:', $groups).')';
+				$base .= '(' . join(',', $groups) . ') values (:' . join(',:', $groups) . ')';
 
 				return $this->db->send(
-					query   : "$base $clause",
-					params  : $params,
+					query: "$base $clause",
+					params: $params,
 					poolName: $poolName
 				);
 			},
@@ -204,20 +207,21 @@ class Repository implements AttributeInterface {
 	/**
 	 * @inheritDoc
 	 */
-	public function onParameter(ReflectionParameter $parameter, mixed &$value, mixed $http): Promise {
+	public function onParameter(ReflectionParameter $parameter, mixed &$value, mixed $http): Promise
+	{
 		/** @var false|HttpContext $http */
-		return new LazyPromise(function() use (
+		return new LazyPromise(function () use (
 			$parameter,
 			&$value,
 			$http
 		) {
 			$name = $parameter->getName();
-			if(!isset(self::$cache["$this->repositoryName:$name"])) {
+			if (!isset(self::$cache["$this->repositoryName:$name"])) {
 				$type = $parameter->getType();
-				if($type !== null) {
-					if($type instanceof ReflectionUnionType)
+				if ($type !== null) {
+					if ($type instanceof ReflectionUnionType)
 						$type = $type->getTypes()[0];
-					if(Closure::class !== $type->getName())
+					if (Closure::class !== $type->getName())
 						die("Repository action must either specify no type or a Closure type.");
 				}
 				self::$cache["$this->repositoryName:$name"] = $this->build($name);
