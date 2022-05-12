@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Exception;
+namespace CatPaw\MYSQL\Exceptions;
 
 use Exception;
 use JetBrains\PhpStorm\Pure;

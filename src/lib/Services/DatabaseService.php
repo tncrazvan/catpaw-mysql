@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Service;
+namespace CatPaw\MYSQL\Services;
 
 use Amp\LazyPromise;
 use Amp\Mysql\CommandResult;
@@ -10,7 +10,7 @@ use Amp\Mysql\ResultSet;
 use Amp\Mysql\Statement;
 use Amp\Promise;
 use CatPaw\Attribute\Service;
-use CatPaw\MYSQL\Exception\PoolNotFoundException;
+use CatPaw\MYSQL\Exceptions\PoolNotFoundException;
 use function Amp\Mysql\pool;
 
 #[Service]

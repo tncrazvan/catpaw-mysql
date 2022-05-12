@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Attribute;
+namespace CatPaw\MYSQL\Attributes;
 
 use Amp\LazyPromise;
 use Amp\Promise;
@@ -8,11 +8,11 @@ use Attribute;
 use CatPaw\Attribute\Entry;
 use CatPaw\Attribute\Interface\AttributeInterface;
 use CatPaw\Attribute\Trait\CoreAttributeDefinition;
-use CatPaw\MYSQL\Utility\Page;
+use CatPaw\MYSQL\Utilities\Page;
 use CatPaw\Utility\StringStack;
 use CatPaw\Web\HttpContext;
 use Closure;
-use CatPaw\MYSQL\Service\DatabaseService;
+use CatPaw\MYSQL\Services\DatabaseService;
 use ReflectionParameter;
 use ReflectionUnionType;
 
