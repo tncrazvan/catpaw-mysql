@@ -36,9 +36,6 @@
     "amphp/file": "^2.0",
     "amphp/mysql": "^2.1"
   },
-  "require-dev": {
-    "catpaw/web": "^1.1"
-  },
   "config": {
     "preferred-install": "dist",
     "process-timeout": 0
