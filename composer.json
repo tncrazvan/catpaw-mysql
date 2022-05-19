@@ -37,6 +37,9 @@
     "amphp/mysql": "^2.1",
     "catpaw/web": "^1.1"
   },
+  "autoload-dev": {
+    "Tests\\": "tests/"
+  },
   "require-dev":{
     "phpunit/phpunit": "^9.5",
     "friendsofphp/php-cs-fixer": "^3.8"
