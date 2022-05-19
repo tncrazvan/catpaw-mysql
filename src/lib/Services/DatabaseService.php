@@ -55,8 +55,8 @@ class DatabaseService {
     public function setPool(string $poolName, string $host, string $user, string $password, string $database = ''): Pool {
         if (!isset($this->cache[$poolName])) {
             $config = ConnectionConfig::fromString(
-				"host=$host user=$user password=$password db=$database"
-			);
+                "host=$host user=$user password=$password db=$database"
+            );
             $this->cache[$poolName] = pool($config);
         }
 

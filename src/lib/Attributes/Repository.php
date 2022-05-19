@@ -24,17 +24,17 @@ class Repository implements AttributeInterface {
      * @param string $repositoryName table to query.
      */
     public function __construct(
-		private string $repositoryName,
-	) {
+        private string $repositoryName,
+    ) {
         $this->repositoryName = strtolower($this->repositoryName);
     }
 
     private DatabaseService $db;
 
     #[Entry]
-	public function main(DatabaseService $db) {
-	    $this->db = $db;
-	}
+    public function main(DatabaseService $db) {
+        $this->db = $db;
+    }
 
     private const CREATE = 0;
     private const READ = 1;
@@ -57,26 +57,26 @@ class Repository implements AttributeInterface {
                 $token = lcfirst($token);
                 if ("removeBy" === $token) {
                     $base = <<<SQL
-					delete from `$this->repositoryName`
-					SQL;
+                        delete from `$this->repositoryName`
+                        SQL;
                     $action = self::DELETE;
                 } else {
                     if ("pageBy" === $token) {
                         $base = <<<SQL
-					select * from `$this->repositoryName`
-					SQL;
+                            select * from `$this->repositoryName`
+                            SQL;
                         $action = self::READ_PAGE;
                     } else {
                         if ("findBy" === $token) {
                             $base = <<<SQL
-					select * from `$this->repositoryName`
-					SQL;
+                                select * from `$this->repositoryName`
+                                SQL;
                             $page = false;
                         } else {
                             if ("updateBy" === $token) {
                                 $base = <<<SQL
-					update $this->repositoryName set
-					SQL;
+                                    update $this->repositoryName set
+                                    SQL;
                                 $action = self::UPDATE;
                             } else {
                                 if ($prec) {
@@ -94,8 +94,8 @@ class Repository implements AttributeInterface {
                                     $where = ('' === $clause ? 'where' : '');
                                     $extra = strtolower($token ?? '');
                                     $clause .= <<<SQL
-					 $where `$prec` $operation :$prec $extra
-					SQL;
+                                         $where `$prec` $operation :$prec $extra
+                                        SQL;
                                 }
                             }
                         }
@@ -103,10 +103,10 @@ class Repository implements AttributeInterface {
                 }
             }
             if (self::READ_PAGE === $action) {
-                return function (Page $page, array $args, false|string $poolName = false) use (
-					$selectOrDelete,
-					$clause
-				) {
+                return function(Page $page, array $args, false|string $poolName = false) use (
+                    $selectOrDelete,
+                    $clause
+                ) {
                     $params = [];
                     if (is_object($args)) {
                         $args = (array)$args;
@@ -116,10 +116,10 @@ class Repository implements AttributeInterface {
                     }
 
                     return $this->db->send(
-						query: "$selectOrDelete $clause $page",
-						params: $params,
-						poolName: $poolName
-					);
+                        query: "$selectOrDelete $clause $page",
+                        params: $params,
+                        poolName: $poolName
+                    );
                 };
             }
         } else {
@@ -137,7 +137,7 @@ class Repository implements AttributeInterface {
 
 
         return match ($action) {
-            self::READ, self::DELETE => function (array|object $args, false|string $poolName = false) use ($base, $clause) {
+            self::READ, self::DELETE => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
                 $params = [];
                 if (is_object($args)) {
                     $args = (array)$args;
@@ -146,93 +146,93 @@ class Repository implements AttributeInterface {
                     $params[strtolower($key)] = $value;
                 }
                 return $this->db->send(
-					query: "$base $clause",
-					params: $params,
-					poolName: $poolName
-				);
+                    query: "$base $clause",
+                    params: $params,
+                    poolName: $poolName
+                );
             },
-			self::READ_PAGE => function (Page $page, array|object $args, false|string $poolName = false) use ($base, $clause) {
-			    $params = [];
-			    if (is_object($args)) {
-			        $args = (array)$args;
-			    }
-			    foreach ($args as $key => $value) {
-			        $params[strtolower($key)] = $value;
-			    }
-			    return $this->db->send(
-					query: "$base $clause $page",
-					params: $params,
-					poolName: $poolName
-				);
-			},
-			self::UPDATE => function (
-				array|object $payload,
-				array|object $matcher,
-				false|string $poolName = false
-			) use ($base, $clause) {
-			    $params = [];
-			    if (is_object($payload)) {
-			        $payload = (array)$payload;
-			    }
-			    if (is_object($matcher)) {
-			        $matcher = (array)$matcher;
-			    }
+            self::READ_PAGE => function(Page $page, array|object $args, false|string $poolName = false) use ($base, $clause) {
+                $params = [];
+                if (is_object($args)) {
+                    $args = (array)$args;
+                }
+                foreach ($args as $key => $value) {
+                    $params[strtolower($key)] = $value;
+                }
+                return $this->db->send(
+                    query: "$base $clause $page",
+                    params: $params,
+                    poolName: $poolName
+                );
+            },
+            self::UPDATE => function(
+                array|object $payload,
+                array|object $matcher,
+                false|string $poolName = false
+            ) use ($base, $clause) {
+                $params = [];
+                if (is_object($payload)) {
+                    $payload = (array)$payload;
+                }
+                if (is_object($matcher)) {
+                    $matcher = (array)$matcher;
+                }
 
-			    $list = [];
-			    foreach ($payload as $key => $value) {
-			        $key = strtolower($key);
-			        $list[] = "$key = :v$key";
-			        $params["v$key"] = $value;
-			    }
+                $list = [];
+                foreach ($payload as $key => $value) {
+                    $key = strtolower($key);
+                    $list[] = "$key = :v$key";
+                    $params["v$key"] = $value;
+                }
 
-			    foreach ($matcher as $key => $value) {
-			        $params[$key] = strtolower($value);
-			    }
+                foreach ($matcher as $key => $value) {
+                    $params[$key] = strtolower($value);
+                }
 
-			    $base .= ' '.join(',', $list);
+                $base .= ' '.join(',', $list);
 
-			    return $this->db->send(
-					query: "$base $clause",
-					params: $params,
-					poolName: $poolName
-				);
-			},
-			self::CREATE => function (array|object $args, false|string $poolName = false) use ($base, $clause) {
-			    $params = [];
-			    if (is_object($args)) {
-			        $args = (array)$args;
-			    }
-			    $groups = [];
-			    foreach ($args as $key => $value) {
-			        $key = strtolower($key);
-			        $params[$key] = $value;
-			        $groups[] = $key;
-			    }
-			    $base .= '('.join(',', $groups).') values (:'.join(',:', $groups).')';
+                return $this->db->send(
+                    query: "$base $clause",
+                    params: $params,
+                    poolName: $poolName
+                );
+            },
+            self::CREATE => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
+                $params = [];
+                if (is_object($args)) {
+                    $args = (array)$args;
+                }
+                $groups = [];
+                foreach ($args as $key => $value) {
+                    $key = strtolower($key);
+                    $params[$key] = $value;
+                    $groups[] = $key;
+                }
+                $base .= '('.join(',', $groups).') values (:'.join(',:', $groups).')';
 
-			    return $this->db->send(
-					query: "$base $clause",
-					params: $params,
-					poolName: $poolName
-				);
-			},
-			default => die("Invalid action (\"$name\") on repository \"$this->repositoryName\".")
+                return $this->db->send(
+                    query: "$base $clause",
+                    params: $params,
+                    poolName: $poolName
+                );
+            },
+            default => die("Invalid action (\"$name\") on repository \"$this->repositoryName\".")
         };
     }
 
     private
-	static array $cache = [];
+    static array $cache = [];
 
     /**
      * @inheritDoc
      */
     public function onParameter(ReflectionParameter $parameter, mixed &$value, mixed $http): Promise {
         /** @var false|HttpContext $http */
-        return new LazyPromise(function () use (
-			$parameter,
-			&$value,
-			$http
-		) {
+        return new LazyPromise(function() use (
+            $parameter,
+            &$value,
+            $http
+        ) {
             $name = $parameter->getName();
             if (!isset(self::$cache["$this->repositoryName:$name"])) {
                 $type = $parameter->getType();

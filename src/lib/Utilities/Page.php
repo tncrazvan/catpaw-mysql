@@ -4,8 +4,8 @@ namespace CatPaw\MYSQL\Utilities;
 
 class Page {
     private function __construct(
-		private string $limit
-	) {
+        private string $limit
+    ) {
     }
 
     public function __toString(): string {
@@ -13,14 +13,15 @@ class Page {
     }
 
     public static function of(
-		int $offset, int $length
-	): self {
+        int $offset,
+        int $length
+    ): self {
         return new Page("limit $offset, $length");
     }
 
     public static function length(
-		int $length
-	): self {
+        int $length
+    ): self {
         return new Page("limit $length");
     }
 }
