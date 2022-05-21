@@ -15,7 +15,8 @@
     "fix": [
       "@php ./vendor/bin/php-cs-fixer fix src",
       "@php ./vendor/bin/php-cs-fixer fix tests"
-    ]
+    ],
+    "test": "@php vendor/bin/phpunit tests"
   },
   "authors": [
     {
@@ -32,11 +33,11 @@
   },
   "require": {
     "php": "^8.0",
-    "catpaw/core": "^1.2",
+    "catpaw/core": "^1.3",
     "amphp/amp": "^2.6",
     "amphp/file": "^2.0",
     "amphp/mysql": "^2.1",
-    "catpaw/web": "^1.1"
+    "catpaw/web": "^1.2"
   },
   "autoload-dev": {
     "Tests\\": "tests/"
