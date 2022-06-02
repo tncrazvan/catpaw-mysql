@@ -36,17 +36,17 @@ class Repository implements AttributeInterface {
         $this->db = $db;
     }
 
-    private const CREATE = 0;
-    private const READ = 1;
+    private const CREATE    = 0;
+    private const READ      = 1;
     private const READ_PAGE = 2;
-    private const UPDATE = 3;
-    private const DELETE = 4;
+    private const UPDATE    = 3;
+    private const DELETE    = 4;
 
     private function build(string $name): false|Closure {
-        $base = '';
+        $base           = '';
         $selectOrDelete = '';
-        $clause = '';
-        $action = self::READ;
+        $clause         = '';
+        $action         = self::READ;
         if ("add" !== $name) {
             $stack = StringStack::of($name);
 
@@ -54,7 +54,7 @@ class Repository implements AttributeInterface {
 
             for ($list->rewind(); $list->valid(); $list->next()) {
                 [$prec, $token] = $list->current();
-                $token = lcfirst($token);
+                $token          = lcfirst($token);
                 if ("removeBy" === $token) {
                     $base = <<<SQL
                         delete from `$this->repositoryName`
@@ -82,15 +82,15 @@ class Repository implements AttributeInterface {
                                 if ($prec) {
                                     $operation = '=';
                                     if (str_starts_with($prec, "Between")) {
-                                        $prec = substr($prec, 7);
+                                        $prec      = substr($prec, 7);
                                         $operation = 'between';
                                     } else {
                                         if (str_starts_with($prec, "Like")) {
                                             $operation = 'like';
-                                            $prec = substr($prec, 4);
+                                            $prec      = substr($prec, 4);
                                         }
                                     }
-                                    $prec = strtolower($prec);
+                                    $prec  = strtolower($prec);
                                     $where = ('' === $clause ? 'where' : '');
                                     $extra = strtolower($token ?? '');
                                     $clause .= <<<SQL
@@ -123,7 +123,7 @@ class Repository implements AttributeInterface {
                 };
             }
         } else {
-            $base = "insert into $this->repositoryName";
+            $base   = "insert into $this->repositoryName";
             $action = self::CREATE;
         }
 
@@ -180,8 +180,8 @@ class Repository implements AttributeInterface {
 
                 $list = [];
                 foreach ($payload as $key => $value) {
-                    $key = strtolower($key);
-                    $list[] = "$key = :v$key";
+                    $key             = strtolower($key);
+                    $list[]          = "$key = :v$key";
                     $params["v$key"] = $value;
                 }
 
@@ -204,9 +204,9 @@ class Repository implements AttributeInterface {
                 }
                 $groups = [];
                 foreach ($args as $key => $value) {
-                    $key = strtolower($key);
+                    $key          = strtolower($key);
                     $params[$key] = $value;
-                    $groups[] = $key;
+                    $groups[]     = $key;
                 }
                 $base .= '('.join(',', $groups).') values (:'.join(',:', $groups).')';
 

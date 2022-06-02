@@ -100,7 +100,7 @@ class DatabaseService {
         return new LazyPromise(function() use ($query, $params, $poolName) {
             /** @var Statement $statement */
             $statement = yield $this->cache[$poolName]->prepare($query);
-            $result = yield $statement->execute($params);
+            $result    = yield $statement->execute($params);
             if ($result instanceof CommandResult) {
                 $id = $result->getLastInsertId();
                 if ($id > 0) {
