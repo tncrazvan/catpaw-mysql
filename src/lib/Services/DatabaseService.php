@@ -94,7 +94,7 @@ class DatabaseService {
         }
 
         if (!$poolName) {
-            throw new PoolNotFoundException("No default pool found. Please consider using \"\$databaseService->setDefaultPool\".");
+            throw new PoolNotFoundException("No default pool found. Please consider using \"".DatabaseService::class."::setDefaultPool\".");
         }
 
         return new LazyPromise(function() use ($query, $params, $poolName) {
