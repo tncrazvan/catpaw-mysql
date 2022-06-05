@@ -2,6 +2,7 @@
 
 namespace CatPaw\MYSQL\Attributes;
 
+use function Amp\call;
 use Amp\LazyPromise;
 use Amp\Promise;
 use Attribute;
@@ -14,6 +15,7 @@ use CatPaw\Utilities\StringStack;
 use CatPaw\Web\HttpContext;
 use Closure;
 use ReflectionParameter;
+
 use ReflectionUnionType;
 
 #[Attribute]
@@ -36,22 +38,25 @@ class Repository implements AttributeInterface {
         $this->db = $db;
     }
 
-    private const CREATE    = 0;
-    private const READ      = 1;
-    private const READ_PAGE = 2;
-    private const UPDATE    = 3;
-    private const DELETE    = 4;
+    private const CREATE     = 0;
+    private const READ       = 1;
+    private const READ_PAGE  = 2;
+    private const UPDATE     = 3;
+    private const DELETE     = 4;
+    private const READ_FIRST = 5;
 
     private function build(string $name): false|Closure {
-        $base           = '';
-        $selectOrDelete = '';
-        $clause         = '';
-        $action         = self::READ;
+        $base = '';
+        // $selectOrDelete = '';
+        $clause = '';
+        $action = self::READ;
         if ("add" !== $name && "add".ucfirst($this->repositoryName) !== $name) {
             $stack = StringStack::of($name);
 
             $list = $stack->expect(
                 "findBy",
+                "findFirstBy",
+                "findFirst".ucfirst($this->repositoryName)."By",
                 "find".ucfirst($this->repositoryName)."By",
                 "pageBy",
                 "page".ucfirst($this->repositoryName)."By",
@@ -83,31 +88,40 @@ class Repository implements AttributeInterface {
                             $base = <<<SQL
                                 select * from `$this->repositoryName`
                                 SQL;
-                            $page = false;
+                        // $page = false;
                         } else {
-                            if ("updateBy" === $token || "update".ucfirst($this->repositoryName)."By" === $token) {
+                            if ("findFirstBy" === $token || "findFirst".ucfirst($this->repositoryName)."By" === $token) {
                                 $base = <<<SQL
-                                    update $this->repositoryName set
+                                    select * from `$this->repositoryName`
                                     SQL;
-                                $action = self::UPDATE;
+                                $action = self::READ_FIRST;
+                            // $page = false;
                             } else {
-                                if ($prec) {
-                                    $operation = '=';
-                                    if (str_starts_with($prec, "Between")) {
-                                        $prec      = substr($prec, 7);
-                                        $operation = 'between';
-                                    } else {
-                                        if (str_starts_with($prec, "Like")) {
-                                            $operation = 'like';
-                                            $prec      = substr($prec, 4);
-                                        }
-                                    }
-                                    $prec  = strtolower($prec);
-                                    $where = ('' === $clause ? 'where' : '');
-                                    $extra = strtolower($token ?? '');
-                                    $clause .= <<<SQL
-                                         $where `$prec` $operation :$prec $extra
+                                if ("updateBy" === $token || "update".ucfirst($this->repositoryName)."By" === $token) {
+                                    $base = <<<SQL
+                                        update $this->repositoryName set
                                         SQL;
+                                    $action = self::UPDATE;
+                                } else {
+                                    if ($prec) {
+                                        $operation = '=';
+                                        if (str_starts_with($prec, "Between")) {
+                                            $prec      = substr($prec, 7);
+                                            $operation = 'between';
+                                        } else {
+                                            if (str_starts_with($prec, "Like")) {
+                                                $operation = 'like';
+                                                $prec      = substr($prec, 4);
+                                            }
+                                        }
+
+                                        $prec  = strtolower($prec);
+                                        $where = ('' === $clause ? 'where' : '');
+                                        $extra = strtolower($token ?? ''); 
+                                        $clause .= <<<SQL
+                                             $where `$prec` $operation :$prec $extra
+                                            SQL;
+                                    }
                                 }
                             }
                         }
@@ -142,6 +156,24 @@ class Repository implements AttributeInterface {
                     params: $params,
                     poolName: $poolName
                 );
+            },
+            self::READ_FIRST, => function(array|object $args, false|string $poolName = false) use ($base, $clause) {
+                $params = [];
+                if (is_object($args)) {
+                    $args = (array)$args;
+                }
+                foreach ($args as $key => $value) {
+                    $params[strtolower($key)] = $value;
+                }
+                return call(function() use ($base, $clause, $params, $poolName) {
+                    $page      = Page::length(1);
+                    $resultset = yield $this->db->send(
+                        query: "$base $clause $page",
+                        params: $params,
+                        poolName: $poolName
+                    );
+                    return $resultset[0] ?? false;
+                });
             },
             self::READ_PAGE => function(Page $page, array|object $args, false|string $poolName = false) use ($base, $clause) {
                 $params = [];
