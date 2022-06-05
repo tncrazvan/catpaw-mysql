@@ -114,26 +114,6 @@ class Repository implements AttributeInterface {
                     }
                 }
             }
-            if (self::READ_PAGE === $action) {
-                return function(Page $page, array $args, false|string $poolName = false) use (
-                    $selectOrDelete,
-                    $clause
-                ) {
-                    $params = [];
-                    if (is_object($args)) {
-                        $args = (array)$args;
-                    }
-                    foreach ($args as $key => $value) {
-                        $params[strtolower($key)] = $value;
-                    }
-
-                    return $this->db->send(
-                        query: "$selectOrDelete $clause $page",
-                        params: $params,
-                        poolName: $poolName
-                    );
-                };
-            }
         } else {
             $base   = "insert into $this->repositoryName";
             $action = self::CREATE;
