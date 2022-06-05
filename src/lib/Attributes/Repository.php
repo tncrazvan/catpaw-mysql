@@ -43,11 +43,14 @@ class Repository implements AttributeInterface {
     private const DELETE    = 4;
 
     private function build(string $name): false|Closure {
-        $base           = '';
-        $selectOrDelete = '';
-        $clause         = '';
-        $action         = self::READ;
-        if ("add" !== $name) {
+        $base                    = '';
+        $selectOrDelete          = '';
+        $clause                  = '';
+        $action                  = self::READ;
+        $lowered                 = strtolower($name);
+        $loweredMatchAdd         = strtolower("add$this->repositoryName");
+        $loweredMatchAddInverted = strtolower("{$this->repositoryName}add");
+        if ("add" !== $lowered && $loweredMatchAdd !== $lowered && $loweredMatchAddInverted !== $lowered) {
             $stack = StringStack::of($name);
 
             $list = $stack->expect("findBy", "pageBy", "removeBy", "updateBy", "And", "Or");
@@ -55,6 +58,7 @@ class Repository implements AttributeInterface {
             for ($list->rewind(); $list->valid(); $list->next()) {
                 [$prec, $token] = $list->current();
                 $token          = lcfirst($token);
+                
                 if ("removeBy" === $token) {
                     $base = <<<SQL
                         delete from `$this->repositoryName`
