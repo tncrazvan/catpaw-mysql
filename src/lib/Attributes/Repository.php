@@ -43,41 +43,49 @@ class Repository implements AttributeInterface {
     private const DELETE    = 4;
 
     private function build(string $name): false|Closure {
-        $base                    = '';
-        $selectOrDelete          = '';
-        $clause                  = '';
-        $action                  = self::READ;
-        $lowered                 = strtolower($name);
-        $loweredMatchAdd         = strtolower("add$this->repositoryName");
-        $loweredMatchAddInverted = strtolower("{$this->repositoryName}add");
-        if ("add" !== $lowered && $loweredMatchAdd !== $lowered && $loweredMatchAddInverted !== $lowered) {
+        $base           = '';
+        $selectOrDelete = '';
+        $clause         = '';
+        $action         = self::READ;
+        if ("add" !== $name && "add".ucfirst($this->repositoryName) !== $name) {
             $stack = StringStack::of($name);
 
-            $list = $stack->expect("findBy", "pageBy", "removeBy", "updateBy", "And", "Or");
+            $list = $stack->expect(
+                "findBy",
+                "find".ucfirst($this->repositoryName)."By",
+                "pageBy",
+                "page".ucfirst($this->repositoryName)."By",
+                "removeBy",
+                "remove".ucfirst($this->repositoryName)."By",
+                "updateBy",
+                "update".ucfirst($this->repositoryName)."By",
+                "And",
+                "Or"
+            );
 
             for ($list->rewind(); $list->valid(); $list->next()) {
                 [$prec, $token] = $list->current();
                 $token          = lcfirst($token);
                 
-                if ("removeBy" === $token) {
+                if ("removeBy" === $token || "remove".ucfirst($this->repositoryName)."By" === $token) {
                     $base = <<<SQL
                         delete from `$this->repositoryName`
                         SQL;
                     $action = self::DELETE;
                 } else {
-                    if ("pageBy" === $token) {
+                    if ("pageBy" === $token || "page".ucfirst($this->repositoryName)."By" === $token) {
                         $base = <<<SQL
                             select * from `$this->repositoryName`
                             SQL;
                         $action = self::READ_PAGE;
                     } else {
-                        if ("findBy" === $token) {
+                        if ("findBy" === $token || "find".ucfirst($this->repositoryName)."By" === $token) {
                             $base = <<<SQL
                                 select * from `$this->repositoryName`
                                 SQL;
                             $page = false;
                         } else {
-                            if ("updateBy" === $token) {
+                            if ("updateBy" === $token || "update".ucfirst($this->repositoryName)."By" === $token) {
                                 $base = <<<SQL
                                     update $this->repositoryName set
                                     SQL;
