@@ -15,7 +15,8 @@
             ],
             "port": 0,
             "runtimeArgs": [
-                "-dxdebug.start_with_request=yes"
+                "-dxdebug.start_with_request=yes",
+                "-dxdebug.mode=debug"
             ],
             "env": {
                 "XDEBUG_MODE": "debug,develop",
