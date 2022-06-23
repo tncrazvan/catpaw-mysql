@@ -1,6 +1,6 @@
 {
   "name": "catpaw/mysql",
-  "description": "A MYSQL library for catpaw that includes a repository attribute for ease of use.",
+  "description": "A MySQL library for catpaw that includes a repository attribute for ease of use.",
   "type": "library",
   "license": "MIT",
   "keywords": [
@@ -29,7 +29,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "CatPaw\\MYSQL\\": "src/lib/"
+      "CatPaw\\MySQL\\": "src/lib/"
     }
   },
   "require": {

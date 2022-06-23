@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Attributes;
+namespace CatPaw\MySQL\Attributes;
 
 use function Amp\call;
 use Amp\LazyPromise;
@@ -9,8 +9,8 @@ use Attribute;
 use CatPaw\Attributes\Entry;
 use CatPaw\Attributes\Interfaces\AttributeInterface;
 use CatPaw\Attributes\Traits\CoreAttributeDefinition;
-use CatPaw\MYSQL\Services\DatabaseService;
-use CatPaw\MYSQL\Utilities\Page;
+use CatPaw\MySQL\Services\DatabaseService;
+use CatPaw\MySQL\Utilities\Page;
 use CatPaw\Utilities\StringStack;
 use CatPaw\Web\HttpContext;
 use Closure;
@@ -23,12 +23,12 @@ class Repository implements AttributeInterface {
     use CoreAttributeDefinition;
 
     /**
-     * @param string $repositoryName table to query.
+     * @param string $tableName table to query.
      */
     public function __construct(
-        private string $repositoryName,
+        private string $tableName,
     ) {
-        $this->repositoryName = strtolower($this->repositoryName);
+        $this->tableName = strtolower($this->tableName);
     }
 
     private DatabaseService $db;
@@ -50,20 +50,20 @@ class Repository implements AttributeInterface {
         // $selectOrDelete = '';
         $clause = '';
         $action = self::READ;
-        if ("add" !== $name && "add".ucfirst($this->repositoryName) !== $name) {
+        if ("add" !== $name && "add".ucfirst($this->tableName) !== $name) {
             $stack = StringStack::of($name);
 
             $list = $stack->expect(
                 "findBy",
                 "findFirstBy",
-                "findFirst".ucfirst($this->repositoryName)."By",
-                "find".ucfirst($this->repositoryName)."By",
+                "findFirst".ucfirst($this->tableName)."By",
+                "find".ucfirst($this->tableName)."By",
                 "pageBy",
-                "page".ucfirst($this->repositoryName)."By",
+                "page".ucfirst($this->tableName)."By",
                 "removeBy",
-                "remove".ucfirst($this->repositoryName)."By",
+                "remove".ucfirst($this->tableName)."By",
                 "updateBy",
-                "update".ucfirst($this->repositoryName)."By",
+                "update".ucfirst($this->tableName)."By",
                 "And",
                 "Or"
             );
@@ -72,34 +72,34 @@ class Repository implements AttributeInterface {
                 [$prec, $token] = $list->current();
                 $token          = lcfirst($token);
                 
-                if ("removeBy" === $token || "remove".ucfirst($this->repositoryName)."By" === $token) {
+                if ("removeBy" === $token || "remove".ucfirst($this->tableName)."By" === $token) {
                     $base = <<<SQL
-                        delete from `$this->repositoryName`
+                        delete from `$this->tableName`
                         SQL;
                     $action = self::DELETE;
                 } else {
-                    if ("pageBy" === $token || "page".ucfirst($this->repositoryName)."By" === $token) {
+                    if ("pageBy" === $token || "page".ucfirst($this->tableName)."By" === $token) {
                         $base = <<<SQL
-                            select * from `$this->repositoryName`
+                            select * from `$this->tableName`
                             SQL;
                         $action = self::READ_PAGE;
                     } else {
-                        if ("findBy" === $token || "find".ucfirst($this->repositoryName)."By" === $token) {
+                        if ("findBy" === $token || "find".ucfirst($this->tableName)."By" === $token) {
                             $base = <<<SQL
-                                select * from `$this->repositoryName`
+                                select * from `$this->tableName`
                                 SQL;
                         // $page = false;
                         } else {
-                            if ("findFirstBy" === $token || "findFirst".ucfirst($this->repositoryName)."By" === $token) {
+                            if ("findFirstBy" === $token || "findFirst".ucfirst($this->tableName)."By" === $token) {
                                 $base = <<<SQL
-                                    select * from `$this->repositoryName`
+                                    select * from `$this->tableName`
                                     SQL;
                                 $action = self::READ_FIRST;
                             // $page = false;
                             } else {
-                                if ("updateBy" === $token || "update".ucfirst($this->repositoryName)."By" === $token) {
+                                if ("updateBy" === $token || "update".ucfirst($this->tableName)."By" === $token) {
                                     $base = <<<SQL
-                                        update $this->repositoryName set
+                                        update $this->tableName set
                                         SQL;
                                     $action = self::UPDATE;
                                 } else {
@@ -129,15 +129,15 @@ class Repository implements AttributeInterface {
                 }
             }
         } else {
-            $base   = "insert into $this->repositoryName";
+            $base   = "insert into $this->tableName";
             $action = self::CREATE;
         }
 
         if (self::UPDATE === $action && '' === $clause) {
-            die("No clause set for update action on repository \"$this->repositoryName\".\n");
+            die("No clause set for update action on repository \"$this->tableName\".\n");
         } else {
             if (self::DELETE === $action && '' === $clause) {
-                die("No clause set for delete action on repository \"$this->repositoryName\".\n");
+                die("No clause set for delete action on repository \"$this->tableName\".\n");
             }
         }
 
@@ -240,7 +240,7 @@ class Repository implements AttributeInterface {
                     poolName: $poolName
                 );
             },
-            default => die("Invalid action (\"$name\") on repository \"$this->repositoryName\".")
+            default => die("Invalid action (\"$name\") on repository \"$this->tableName\".")
         };
     }
 
@@ -258,7 +258,7 @@ class Repository implements AttributeInterface {
             $http
         ) {
             $name = $parameter->getName();
-            if (!isset(self::$cache["$this->repositoryName:$name"])) {
+            if (!isset(self::$cache["$this->tableName:$name"])) {
                 $type = $parameter->getType();
                 if (null !== $type) {
                     if ($type instanceof ReflectionUnionType) {
@@ -268,9 +268,9 @@ class Repository implements AttributeInterface {
                         die("Repository action must either specify no type or a Closure type.");
                     }
                 }
-                self::$cache["$this->repositoryName:$name"] = $this->build($name);
+                self::$cache["$this->tableName:$name"] = $this->build($name);
             }
-            $value = self::$cache["$this->repositoryName:$name"];
+            $value = self::$cache["$this->tableName:$name"];
         });
     }
 }

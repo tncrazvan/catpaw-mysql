@@ -1,17 +1,18 @@
 <?php
 
-namespace CatPaw\MYSQL\Services;
+namespace CatPaw\MySQL\Services;
 
-use Amp\LazyPromise;
+use function Amp\call;
 use Amp\Mysql\CommandResult;
 use Amp\Mysql\ConnectionConfig;
+
 use Amp\Mysql\Pool;
 use function Amp\Mysql\pool;
 use Amp\Mysql\ResultSet;
 use Amp\Mysql\Statement;
 use Amp\Promise;
 use CatPaw\Attributes\Service;
-use CatPaw\MYSQL\Exceptions\PoolNotFoundException;
+use CatPaw\MySQL\Exceptions\PoolNotFoundException;
 
 #[Service]
 class DatabaseService {
@@ -43,7 +44,7 @@ class DatabaseService {
 
 
     /**
-     * Creates a new pool.<br/>
+     * Creates a new pool.
      * If no default pool has been set, this pool will become the default.
      * @param  string $poolName
      * @param  string $host
@@ -70,23 +71,15 @@ class DatabaseService {
     /**
      * Executes a prepared statement using named parameters.
      * @param string $query  query to execute.
-     * @param array  $params named parameters.<br/>
+     * @param array  $params named parameters.
      *                       Example: "... where col1 like :value1 and col2 like :value2".
-     * @param false|string name of the pool.<br/>
+     * @param false|string name of the pool.
      * If false, will use the default pool.
      * @throws PoolNotFoundException
-     * @return Promise<array|int|bool>
-     *                                 <ul>
-     *                                 <li>
-     *                                 array of selected rows
-     *                                 </li>
-     *                                 <li>
-     *                                 integer of the last inserted id
-     *                                 </li>
-     *                                 <li>
-     *                                 bool when executing a command (update, delete, insert that does not return an auto incremented id).
-     *                                 </li>
-     *                                 </ul>
+     * @return Promise<array|int|bool> value can be
+     *                                 - array of selected rows
+     *                                 - integer of the last inserted id
+     *                                 - bool when executing a command (update, delete, insert that does not return an auto incremented id).
      */
     public function send(string $query, array $params = [], false|string $poolName = false): Promise {
         if (!$poolName) {
@@ -94,10 +87,10 @@ class DatabaseService {
         }
 
         if (!$poolName) {
-            throw new PoolNotFoundException("No default pool found. Please consider using \"".DatabaseService::class."::setDefaultPool\".");
+            throw new PoolNotFoundException("No default pool found. Please consider using \"".DatabaseService::class."::setDefaultPool\" to set a default pool.");
         }
 
-        return new LazyPromise(function() use ($query, $params, $poolName) {
+        return call(function() use ($query, $params, $poolName) {
             /** @var Statement $statement */
             $statement = yield $this->cache[$poolName]->prepare($query);
             $result    = yield $statement->execute($params);

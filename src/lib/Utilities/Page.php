@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Utilities;
+namespace CatPaw\MySQL\Utilities;
 
 class Page {
     private function __construct(

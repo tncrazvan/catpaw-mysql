@@ -1,6 +1,6 @@
 <?php
 
-namespace CatPaw\MYSQL\Exceptions;
+namespace CatPaw\MySQL\Exceptions;
 
 use Exception;
 use Throwable;
